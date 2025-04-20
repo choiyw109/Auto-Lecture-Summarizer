@@ -1,6 +1,4 @@
-
-// This is a placeholder service for transcription and summarization
-// In a real implementation, this would connect to a speech-to-text API
+// TranscriptionService.ts
 
 export interface TranscriptionResult {
   transcription: string;
@@ -8,16 +6,14 @@ export interface TranscriptionResult {
 }
 
 export const transcribeAndSummarize = async (mediaFile: File): Promise<TranscriptionResult> => {
-  // This is a mock function that simulates processing time
-  // In a real app, you would send the file to a backend service
-  
   console.log(`Processing file: ${mediaFile.name} (${mediaFile.type})`);
     
-  // Simulate different results based on file name to make it more interactive
-  const formData = new FormData();
-  formData.append('file', mediaFile);
-  formData.append('fileType', mediaFile.type);
+  
   try {
+    const formData = new FormData();
+    formData.append('file', mediaFile);
+    formData.append('fileType', mediaFile.type);
+
     const res = await fetch('http://localhost:5000/summarize', {
       method: 'POST',
       body: formData,
@@ -28,7 +24,7 @@ export const transcribeAndSummarize = async (mediaFile: File): Promise<Transcrip
     }
 
     const data = await res.json();
-
+  
     let transcription = data.transcription;
     let summary = data.summary;
 
