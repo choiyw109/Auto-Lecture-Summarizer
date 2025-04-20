@@ -77,3 +77,18 @@ def summarizerWithAPI(text):
 
     result = response.json()
     return result['microsoft']['result']
+
+# using llama
+
+from ollama import chat
+from ollama import ChatResponse
+
+def summarizerWithLlama(text):
+    response: ChatResponse = chat(model='llama3.2', messages=[
+        {
+            'role': 'user', 
+            'content': f'Summarize the following: {text}'
+        },
+    ])
+
+    return response.message.content
