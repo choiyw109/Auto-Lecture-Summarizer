@@ -18,7 +18,7 @@ export const transcribeAndSummarize = async (mediaFile: File): Promise<Transcrip
   formData.append('file', mediaFile);
   formData.append('fileType', mediaFile.type);
   try {
-    const res = await fetch('http://localhost:5000/api/transcribe', {
+    const res = await fetch('http://localhost:5000/summarize', {
       method: 'POST',
       body: formData,
     })
