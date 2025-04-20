@@ -14,9 +14,9 @@ def test():
 
 @app.route('/summarize', methods=['POST'])
 def summarizeAudio():
-    payload = request.get_json()
-    input_file = payload.get('file')
-    filetype = payload.get('filetype')
+    payload = request.form
+    input_file = payload['file']
+    filetype = payload['filetype']
     transcription = ""
     summary = ""
     if filetype == 'video':
@@ -25,7 +25,7 @@ def summarizeAudio():
         transcription = videoToText.convert_audio_to_text(input_file)
     else:
         # SERVER ERROR
-        return {'error': 'Bad request'}, 500
+        return {'error': 'Bad request'}, 400
 
     summary = textSummarize.summarizerWithAPI(transcription)
     # summary = textSummarize.summarizerWithLlama(transcription)
