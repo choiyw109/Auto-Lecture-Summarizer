@@ -44,40 +44,69 @@ def summarizerWithNLTK(text):
     return summary
 
 # using summarizer api
-
 import requests
 import os
 from dotenv import load_dotenv
-load_dotenv()
+import nltk
 
+# Ensure NLTK data is downloaded
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+    
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
 
 def summarizerWithAPI(text):
     """
     This function uses the EdenAI API to summarize text.
     It requires an API key stored in an environment variable.
     """
+    # Load environment variables
+    load_dotenv()
+    
     # Ensure that the API key is set in your environment variables
-    if "EDENAI_API_KEY" not in os.environ:
-        raise ValueError("Please set the EDENAI_API_KEY environment variable.")
-
-    # Use the API key from the environment variable
-
     TOKEN = os.getenv("EDENAI_API_KEY")
+    if not TOKEN:
+        print("EdenAI API key not found in environment variables")
+        # Fall back to NLTK if API key is missing
+        return summarizerWithNLTK(text)
 
-    headers = {"Authorization": TOKEN}
+    try:
+        headers = {"Authorization": f"Bearer {TOKEN}"}
 
-    url = "https://api.edenai.run/v2/text/summarize"
-    payload = {
-        "providers": "microsoft,connexun",
-        "language": "en",
-        "text": text,
-    }
+        url = "https://api.edenai.run/v2/text/summarize"
+        payload = {
+            "providers": "microsoft",  # Using just one provider for reliability
+            "language": "en",
+            "text": text,
+        }
 
-    response = requests.post(url, json=payload, headers=headers)
-
-    result = response.json()
-    return result['microsoft']['result']
-
+        response = requests.post(url, json=payload, headers=headers)
+        
+        if response.status_code != 200:
+            print(f"EdenAI API error: {response.status_code} - {response.text}")
+            # Fall back to NLTK if API fails
+            return summarizerWithNLTK(text)
+            
+        result = response.json()
+        
+        if 'microsoft' in result and 'result' in result['microsoft']:
+            return result['microsoft']['result']
+        else:
+            print("Unexpected response format from EdenAI API")
+            print(f"Response: {result}")
+            # Fall back to NLTK if response format is unexpected
+            return summarizerWithNLTK(text)
+            
+    except Exception as e:
+        print(f"Error using EdenAI API: {e}")
+        # Fall back to NLTK in case of any exception
+        return summarizerWithNLTK(text)
+    
 # using llama
 
 from ollama import chat

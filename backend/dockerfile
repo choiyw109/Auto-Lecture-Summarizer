@@ -1,0 +1,27 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install system dependencies required for MoviePy and Whisper
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the application files
+COPY textSummarize.py /app/
+COPY videoToText.py /app/
+COPY requirements.txt /app/
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Download NLTK data
+RUN python -m nltk.downloader punkt stopwords
+
+# Install ollama client
+RUN pip install ollama
+
+# Default command (can be overridden)
+CMD ["python", "-c", "print('Container is running. Use docker exec to run specific scripts.')"]

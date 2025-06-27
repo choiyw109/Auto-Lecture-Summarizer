@@ -7,43 +7,37 @@ export interface TranscriptionResult {
 
 export const transcribeAndSummarize = async (mediaFile: File): Promise<TranscriptionResult> => {
   console.log(`Processing file: ${mediaFile.name} (${mediaFile.type})`);
-    
   
   try {
     const formData = new FormData();
     formData.append('file', mediaFile);
     formData.append('fileType', mediaFile.type);
 
+    console.log("Sending request to backend...");
     const res = await fetch('http://localhost:5000/summarize', {
       method: 'POST',
       body: formData,
-    })
+    });
 
+    console.log(`Server response status: ${res.status}`);
     if (!res.ok) {
-      throw new Error(`Server returned ${res.status}`);
+      const errorText = await res.text();
+      console.error(`Server error: ${errorText}`);
+      throw new Error(`Server returned ${res.status}: ${errorText}`);
     }
 
     const data = await res.json();
-  
-    let transcription = data.transcription;
-    let summary = data.summary;
-
-
-    if (mediaFile.type.startsWith('audio/')) {
-      transcription = `[Audio Transcription] ${transcription}`;
-    } else {
-      transcription = `[Video Transcription] ${transcription}`;
-    }
-
+    console.log("Response received successfully");
+    
     return {
-      transcription,
-      summary
+      transcription: data.transcription || 'No transcription available',
+      summary: data.summary || 'No summary available'
     };
   } catch (error) {
     console.error('Error processing media:', error);
     return {
-      transcription: 'Error fetching transcription.',
-      summary: 'Error fetching summary.'
+      transcription: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      summary: 'Could not generate summary due to an error.'
     };
   }
 };
